@@ -1,55 +1,33 @@
 import discord
 from discord.ext import commands
-
-TOKEN = 'NTE2MDgzMDkyMDUwNTQyNjAx.DtvO8Q.ONcpXUa5Jj6_8-IFip_fztMkDIY'
+import platform
+from random import randint
+import youtube_dl
+import json
 
 client = commands.Bot(command_prefix = "]")
-
 players = {}
+extensions = ['Server_Commands', 'Fun', 'Youtube_Player']
 
+with open('strings.json') as json_data:
+    data = json.load(json_data)
+TOKEN = data[token]
 
 @client.event
 async def on_ready():
+    print('Logged in as '+client.user.name+' (ID:'+client.user.id+') | Connected to '+str(len(client.servers))+' servers | Connected to '+str(len(set(client.get_all_members())))+' users')
+    print('--------')
+    print('Current Discord.py Version: {} | Current Python Version: {}'.format(discord.__version__, platform.python_version()))
+    print('--------')
+    print('Use this link to invite {}:'.format(client.user.name))
+    print('https://discordapp.com/oauth2/authorize?client_id={}&scope=bot&permissions=8'.format(client.user.id))
     await client.change_presence(game = discord.Game(name='with Humans'))
     print('Bot is ready ^.^')
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    await client.process_commands(message)
-
-
-@client.event
-async def on_message_delete(message):
-    author = message.author
-    content = message.content
-    channel = message.channel
-    await client.send_message(channel, '{} deleted this: {}\nNice try BAKA :P'.format(author, content))
-
-@client.command()
-async def hacked(*args):
-    for word in args:
-        if word.lower() ==  "navid":
-            await client.say("You have just been hacked XD")
-
-@client.command(pass_context = True)
-async def join(ctx):
-    channel = ctx.message.author.voice.voice_channel
-    await client.join_voice_channel(channel)
-
-@client.command(pass_context = True)
-async def banish(ctx):
-    server = ctx.message.server
-    voice_client = client.voice_client_in(server)
-    await voice_client.disconnect()
-
-@client.command(pass_context = True)
-async def prank(ctx):
-    server = ctx.message.server
-    voice_client = client.voice_client_in(server)
-    player = await voice_client.create_ytdl_player("https://www.youtube.com/watch?v=jD3c0RwF55c")
-    players[server.id] = player
-    player.start()
-
-client.run(TOKEN)
+if __name__ == "__main__":
+    for ext in extensions:
+        try:
+            client.load_extension(extension)
+        except Exception as error:
+            print('{} cannot be loaded. Error: {}'.format(extension, error))
+    client.run(TOKEN)
